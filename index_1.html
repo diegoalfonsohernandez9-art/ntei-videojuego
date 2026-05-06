@@ -1,0 +1,633 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>No Todos Empiezan Igual</title>
+<link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=VT323&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#0d0d1a;--s1:#111128;--s2:#1a1a3a;--s3:#22224a;--b1:rgba(255,255,255,.07);--b2:rgba(255,255,255,.15);--t1:#e8e8ff;--t2:#9090b8;--t3:#505070;--y:#ffe033;--g:#33ff99;--r:#ff3355;--bl:#33aaff;--pu:#aa55ff;--cy:#33ffee;--or:#ff8833;--font1:'Press Start 2P',monospace;--font2:'VT323',monospace;}
+*{margin:0;padding:0;box-sizing:border-box;}
+html,body{width:100%;height:100%;background:var(--bg);overflow:hidden;}
+body{font-family:var(--font2);color:var(--t1);cursor:none;}
+#cur{position:fixed;width:12px;height:12px;background:var(--y);box-shadow:0 0 0 2px #0d0d1a,0 0 0 4px var(--y);pointer-events:none;z-index:9999;transform:translate(-50%,-50%);transition:transform .05s;}
+#cur.c{transform:translate(-50%,-50%) scale(.5);}
+#pcv{position:fixed;inset:0;pointer-events:none;z-index:0;}
+.sl{position:fixed;inset:0;background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,0,0,.12) 2px,rgba(0,0,0,.12) 4px);pointer-events:none;z-index:998;}
+.vg{position:fixed;inset:0;background:radial-gradient(ellipse at center,transparent 50%,rgba(0,0,0,.65) 100%);pointer-events:none;z-index:997;}
+.sc{display:none;position:fixed;inset:0;z-index:10;overflow:hidden;}
+.sc.on{display:flex;flex-direction:column;align-items:center;justify-content:center;}
+/* TITLE */
+#st{background:var(--bg);}
+#tbg{position:absolute;inset:0;z-index:1;}
+.tc{position:relative;z-index:5;text-align:center;padding:1.5rem;width:100%;max-width:800px;}
+.tpre{font-family:var(--font1);font-size:8px;color:var(--bl);letter-spacing:.25em;margin-bottom:1.5rem;animation:bk 1.5s infinite;}
+.ttl{font-family:var(--font1);font-size:clamp(14px,3.5vw,26px);color:var(--y);line-height:1.7;text-shadow:4px 4px 0 #9a8000,0 0 30px rgba(255,224,51,.35);margin-bottom:.5rem;animation:fl 3s ease-in-out infinite;}
+.tsub{font-family:var(--font1);font-size:clamp(7px,1.4vw,10px);color:var(--r);text-shadow:2px 2px 0 #880022;margin-bottom:2.5rem;}
+.rg{display:flex;justify-content:center;gap:1rem;margin-bottom:2rem;flex-wrap:wrap;}
+.rb{display:flex;flex-direction:column;align-items:center;gap:6px;cursor:pointer;transition:transform .15s;}
+.rb:hover{transform:translateY(-4px);}
+.rb.sel .rf{border-color:var(--y);box-shadow:0 0 18px var(--y),inset 0 0 8px rgba(255,224,51,.1);}
+.rf{width:68px;height:68px;border:3px solid var(--b2);background:var(--s2);display:flex;align-items:center;justify-content:center;transition:all .2s;}
+.rl{font-family:var(--font1);font-size:7px;color:var(--t2);text-align:center;line-height:1.6;}
+.rb.sel .rl{color:var(--y);}
+.bps{font-family:var(--font1);font-size:10px;color:#fff;background:transparent;border:3px solid #fff;padding:.875rem 2rem;cursor:pointer;letter-spacing:.1em;box-shadow:4px 4px 0 var(--s3);transition:all .1s;}
+.bps:hover:not(:disabled){background:var(--y);color:#0d0d1a;border-color:var(--y);box-shadow:4px 4px 0 #9a8000;transform:translate(-1px,-1px);}
+.bps:active:not(:disabled){transform:translate(2px,2px);box-shadow:2px 2px 0 var(--s3);}
+.bps:disabled{opacity:.35;cursor:not-allowed;}
+/* GAME */
+#sg{background:var(--bg);flex-direction:column;justify-content:flex-start;overflow-y:auto;}
+.hud{width:100%;background:var(--s1);border-bottom:3px solid var(--b2);padding:6px 12px;display:flex;align-items:center;gap:10px;flex-wrap:wrap;z-index:50;position:sticky;top:0;}
+.hl{font-family:var(--font1);font-size:8px;color:var(--y);white-space:nowrap;}
+.hs{width:2px;height:26px;background:var(--s3);}
+.hi{display:flex;flex-direction:column;gap:1px;}
+.hib{font-family:var(--font1);font-size:6px;color:var(--t3);letter-spacing:.1em;}
+.hiv{font-family:var(--font1);font-size:9px;color:var(--t1);}
+.hbw{display:flex;flex-direction:column;gap:3px;min-width:80px;}
+.hbo{height:9px;background:#0a0a14;border:2px solid var(--s3);overflow:hidden;}
+.hbi{height:100%;transition:width .4s ease;}
+.ga{display:grid;grid-template-columns:1fr 260px;gap:0;height:calc(100vh - 48px);}
+@media(max-width:680px){.ga{grid-template-columns:1fr;height:auto;overflow-y:auto;}}
+.bf{display:flex;flex-direction:column;border-right:3px solid var(--s3);overflow:hidden;}
+.bs{background:linear-gradient(180deg,#06060f 0%,#0b0b22 45%,#121230 100%);border-bottom:3px solid var(--s3);position:relative;overflow:hidden;flex-shrink:0;height:180px;}
+.bg{position:absolute;bottom:0;left:0;right:0;height:36px;background:repeating-linear-gradient(90deg,#161630 0,#161630 8px,#1c1c3c 8px,#1c1c3c 16px);border-top:3px solid var(--b2);}
+.bpl{position:absolute;bottom:38px;left:24px;}
+.ben{position:absolute;bottom:38px;right:24px;}
+#bcan{position:absolute;inset:0;pointer-events:none;}
+.db{background:var(--s2);border:3px solid var(--b2);border-top:none;padding:12px 14px 8px;flex-shrink:0;}
+.dn{font-family:var(--font1);font-size:8px;color:var(--y);margin-bottom:6px;letter-spacing:.06em;}
+.dt{font-family:var(--font2);font-size:19px;color:var(--t1);line-height:1.4;min-height:55px;}
+.dc{display:inline-block;width:9px;height:2px;background:var(--y);margin-left:3px;animation:bk .8s infinite;vertical-align:middle;}
+.ap{padding:12px 14px;overflow-y:auto;flex:1;}
+.ap::-webkit-scrollbar{width:3px;}
+.ap::-webkit-scrollbar-thumb{background:var(--b2);}
+.pt{font-family:var(--font1);font-size:7px;color:var(--cy);letter-spacing:.18em;text-transform:uppercase;margin-bottom:10px;padding-bottom:7px;border-bottom:2px solid var(--s3);display:flex;align-items:center;gap:6px;}
+.pt::before{content:'▶';color:var(--y);font-size:7px;}
+.cc{background:var(--s3);border:3px solid var(--s3);padding:10px;margin-bottom:10px;position:relative;}
+.cc::before{content:'';position:absolute;top:-3px;left:-3px;right:-3px;height:3px;background:var(--r);}
+.ci{font-size:26px;display:block;margin-bottom:5px;}
+.cn{font-family:var(--font1);font-size:8px;color:#fff;margin-bottom:5px;line-height:1.6;}
+.cd{font-family:var(--font2);font-size:17px;color:var(--t2);line-height:1.4;}
+.dt2{display:inline-block;font-family:var(--font1);font-size:6px;padding:3px 7px;margin-top:7px;}
+.de{background:#0a3a22;color:var(--g);border:2px solid var(--g);}
+.dm{background:#3a2a00;color:var(--y);border:2px solid var(--y);}
+.dh{background:#3a1500;color:var(--or);border:2px solid var(--or);}
+.dvh{background:#3a0011;color:var(--r);border:2px solid var(--r);}
+.ol{display:flex;flex-direction:column;gap:5px;margin-bottom:12px;}
+.oi{background:var(--s2);border:3px solid var(--s3);padding:9px 10px;cursor:pointer;display:flex;align-items:center;gap:8px;transition:all .1s;}
+.oi:hover{border-color:var(--b2);background:var(--s3);transform:translateX(3px);}
+.oi.sel{border-color:var(--y);background:rgba(255,224,51,.07);}
+.oi.neg.sel{border-color:var(--r);background:rgba(255,51,85,.07);}
+.oi::before{content:'○';font-family:var(--font1);font-size:9px;color:var(--t3);flex-shrink:0;}
+.oi.sel::before{content:'●';color:var(--y);}
+.oi.neg.sel::before{content:'●';color:var(--r);}
+.ot{flex:1;}
+.on{font-family:var(--font1);font-size:7px;color:var(--t1);line-height:1.5;margin-bottom:2px;}
+.od{font-family:var(--font2);font-size:15px;color:var(--t3);}
+.of{font-family:var(--font1);font-size:9px;white-space:nowrap;}
+.fp{color:var(--g);}.fn{color:var(--r);}.fu{color:var(--t3);}
+.chb{background:var(--s3);border:3px solid var(--b2);padding:10px;margin-bottom:10px;}
+.chq{font-family:var(--font1);font-size:8px;color:var(--cy);line-height:1.8;margin-bottom:10px;}
+.ri{width:100%;background:#060611;border:3px solid var(--b2);color:var(--g);font-family:var(--font1);font-size:9px;padding:8px 9px;outline:none;margin-bottom:6px;caret-color:var(--g);}
+.ri:focus{border-color:var(--g);box-shadow:0 0 8px rgba(51,255,153,.15);}
+.ri.ok{border-color:var(--g);}
+.ri.no{border-color:var(--r);animation:shk .3s ease;}
+.fb{font-family:var(--font1);font-size:7px;padding:5px 8px;margin-bottom:7px;display:none;line-height:1.6;}
+.fb.on{display:block;}
+.fb.y{background:rgba(51,255,153,.08);color:var(--g);border:2px solid var(--g);}
+.fb.n{background:rgba(255,51,85,.08);color:var(--r);border:2px solid var(--r);}
+.ba{font-family:var(--font1);font-size:7.5px;background:var(--s2);color:var(--t1);border:3px solid var(--b2);padding:8px 12px;cursor:pointer;letter-spacing:.07em;text-transform:uppercase;width:100%;margin-top:6px;box-shadow:3px 3px 0 rgba(0,0,0,.5);transition:all .1s;}
+.ba:hover:not(:disabled){background:var(--y);color:#0d0d1a;border-color:var(--y);transform:translate(-1px,-1px);box-shadow:4px 4px 0 #9a8000;}
+.ba:active:not(:disabled){transform:translate(2px,2px);box-shadow:1px 1px 0 rgba(0,0,0,.5);}
+.ba:disabled{opacity:.4;cursor:not-allowed;}
+/* SIDEBAR */
+.sb{display:flex;flex-direction:column;background:var(--s1);border-left:3px solid var(--s3);overflow-y:auto;}
+.sb::-webkit-scrollbar{width:3px;}
+.sb::-webkit-scrollbar-thumb{background:var(--b2);}
+.ss{padding:10px;border-bottom:3px solid var(--s3);}
+.stl{font-family:var(--font1);font-size:6px;color:var(--t3);letter-spacing:.18em;text-transform:uppercase;margin-bottom:8px;}
+.psi{display:flex;align-items:center;gap:7px;padding:5px 7px;font-family:var(--font1);font-size:6.5px;border:2px solid transparent;}
+.psi.ac{border-color:var(--y);background:rgba(255,224,51,.05);color:var(--y);}
+.psi.dn2{color:var(--t3);}
+.psi.dn2 .pic::after{content:'✓';}
+.pic{font-size:11px;width:16px;text-align:center;flex-shrink:0;}
+.sr{display:flex;flex-direction:column;gap:7px;}
+.si2{display:flex;flex-direction:column;gap:2px;}
+.sh{display:flex;justify-content:space-between;}
+.snm{font-family:var(--font1);font-size:6px;color:var(--t2);}
+.sv{font-family:var(--font1);font-size:6px;}
+.sbg{height:7px;background:#0a0a14;border:2px solid var(--s3);overflow:hidden;}
+.sfi{height:100%;transition:width .5s ease;}
+.sfi::after{content:'';position:absolute;top:0;left:1px;height:2px;right:1px;background:rgba(255,255,255,.3);}
+.hf{display:flex;flex-direction:column;gap:5px;max-height:180px;overflow-y:auto;}
+.hf::-webkit-scrollbar{width:3px;}
+.hf::-webkit-scrollbar-thumb{background:var(--b2);}
+.he{background:var(--s2);border:2px solid var(--s3);padding:6px 7px;font-family:var(--font1);font-size:6.5px;line-height:1.8;animation:si .3s ease;}
+.hr{color:var(--y);}.hc{color:var(--t2);}.hu{color:var(--g);}.hd{color:var(--r);}
+/* MODAL */
+#mr{position:fixed;inset:0;background:rgba(0,0,0,.85);z-index:200;display:none;align-items:center;justify-content:center;padding:1.5rem;}
+#mr.on{display:flex;}
+.mw{background:var(--s1);border:4px solid var(--b2);width:100%;max-width:460px;box-shadow:8px 8px 0 rgba(0,0,0,.8);animation:pi .2s ease;}
+.mtb{background:var(--b2);padding:7px 11px;display:flex;justify-content:space-between;align-items:center;}
+.mtt{font-family:var(--font1);font-size:8px;color:#fff;letter-spacing:.08em;}
+.mb{padding:18px;}
+.mt{font-family:var(--font1);font-size:12px;margin-bottom:.5rem;line-height:1.5;}
+.ms{font-family:var(--font2);font-size:19px;color:var(--t2);margin-bottom:1rem;line-height:1.5;}
+.me{display:grid;grid-template-columns:repeat(3,1fr);gap:7px;margin-bottom:1rem;}
+.mec{background:var(--s3);border:3px solid var(--s3);padding:9px 5px;text-align:center;}
+.men{font-family:var(--font1);font-size:17px;display:block;margin-bottom:3px;}
+.mel{font-family:var(--font1);font-size:6.5px;color:var(--t3);}
+.mrf{background:rgba(170,85,255,.08);border:2px solid rgba(170,85,255,.25);padding:9px 11px;font-family:var(--font2);font-size:17px;color:#cc99ff;line-height:1.5;margin-bottom:1rem;}
+/* END */
+#se{background:var(--bg);padding:2rem;overflow-y:auto;}
+.ew{max-width:660px;width:100%;margin:0 auto;text-align:center;}
+.ea{font-family:var(--font1);font-size:clamp(6px,1.2vw,9px);line-height:1.8;margin-bottom:1.5rem;white-space:pre;}
+.etl{font-family:var(--font1);font-size:clamp(12px,2.5vw,20px);line-height:1.6;margin-bottom:.75rem;animation:fl 3s ease-in-out infinite;}
+.em{font-family:var(--font2);font-size:20px;color:var(--t2);margin-bottom:1.5rem;line-height:1.7;max-width:540px;margin-left:auto;margin-right:auto;}
+.esg{display:grid;grid-template-columns:repeat(auto-fit,minmax(100px,1fr));gap:8px;margin-bottom:1.5rem;}
+.esb{background:var(--s1);border:3px solid var(--b2);padding:12px 8px;text-align:center;}
+.esv{font-family:var(--font1);font-size:18px;color:var(--y);display:block;margin-bottom:5px;}
+.esl{font-family:var(--font1);font-size:6.5px;color:var(--t3);line-height:1.6;}
+.rp{background:var(--s1);border:3px solid var(--s3);padding:1rem;text-align:left;margin-bottom:1.5rem;}
+.rph{font-family:var(--font1);font-size:7px;color:var(--pu);margin-bottom:.875rem;letter-spacing:.12em;}
+.rq{font-family:var(--font2);font-size:19px;color:var(--t2);padding:8px 0;border-bottom:2px solid var(--s3);display:flex;gap:10px;line-height:1.5;}
+.rq:last-child{border-bottom:none;}
+.rn{font-family:var(--font1);font-size:7px;color:var(--t3);min-width:22px;padding-top:3px;}
+.ebr{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;}
+/* FX FLOAT */
+.xpf{position:fixed;font-family:var(--font1);font-size:10px;pointer-events:none;z-index:999;animation:xf 1s ease forwards;}
+#gpb{position:fixed;bottom:0;left:0;height:4px;background:var(--y);transition:width .5s ease;z-index:900;box-shadow:0 0 8px var(--y);}
+/* KEYFRAMES */
+@keyframes bk{0%,49%{opacity:1}50%,100%{opacity:0}}
+@keyframes fl{0%,100%{transform:translateY(0)}50%{transform:translateY(-7px)}}
+@keyframes shk{0%,100%{transform:translateX(0)}25%{transform:translateX(-4px)}75%{transform:translateX(4px)}}
+@keyframes si{from{opacity:0;transform:translateY(-6px)}to{opacity:1;transform:translateY(0)}}
+@keyframes pi{from{opacity:0;transform:scale(.92)}to{opacity:1;transform:scale(1)}}
+@keyframes wk{0%,100%{transform:translateY(0)}50%{transform:translateY(-4px)}}
+@keyframes ft{0%,100%{transform:translateY(0) scaleX(-1)}50%{transform:translateY(-5px) scaleX(-1)}}
+@keyframes hf2{0%{filter:brightness(1)}50%{filter:brightness(5) saturate(0)}100%{filter:brightness(1)}}
+@keyframes xf{0%{opacity:1;transform:translateY(0)}100%{opacity:0;transform:translateY(-38px)}}
+.wk{animation:wk .4s ease-in-out infinite;}
+.ft{animation:ft 2s ease-in-out infinite;}
+.hit2{animation:hf2 .3s ease!important;}
+</style>
+</head>
+<body>
+<canvas id="pcv"></canvas>
+<div class="sl"></div>
+<div class="vg"></div>
+<div id="cur"></div>
+<div id="gpb" style="width:0%"></div>
+
+<!-- TÍTULO -->
+<section class="sc on" id="st">
+<canvas id="tbg" style="position:absolute;inset:0;z-index:1;"></canvas>
+<div class="tc">
+  <div class="tpre">— PRESS START GAMES presenta —</div>
+  <h1 class="ttl">NO TODOS<br>EMPIEZAN<br>IGUAL</h1>
+  <div class="tsub">UN RPG SOBRE DESIGUALDAD EDUCATIVA</div>
+  <div style="font-family:var(--font1);font-size:7px;color:var(--t3);margin-bottom:.875rem;letter-spacing:.14em;">ELIGE TU PERSONAJE</div>
+  <div class="rg" id="rg">
+    <div class="rb" data-role="estudiante" onclick="selRol(this)">
+      <div class="rf"><canvas id="spe" width="48" height="48"></canvas></div>
+      <div class="rl">ESTUDIANTE<br><span style="color:var(--t3)">Quiere graduarse</span></div>
+    </div>
+    <div class="rb" data-role="profesor" onclick="selRol(this)">
+      <div class="rf"><canvas id="spp" width="48" height="48"></canvas></div>
+      <div class="rl">PROFESOR<br><span style="color:var(--t3)">Decide el apoyo</span></div>
+    </div>
+    <div class="rb" data-role="familia" onclick="selRol(this)">
+      <div class="rf"><canvas id="spf" width="48" height="48"></canvas></div>
+      <div class="rl">FAMILIA<br><span style="color:var(--t3)">El contexto</span></div>
+    </div>
+    <div class="rb" data-role="sistema" onclick="selRol(this)">
+      <div class="rf"><canvas id="spsi" width="48" height="48"></canvas></div>
+      <div class="rl">SISTEMA<br><span style="color:var(--t3)">Las reglas</span></div>
+    </div>
+  </div>
+  <button class="bps" id="bst" onclick="startGame()" disabled>▶ COMENZAR PARTIDA</button>
+</div>
+</section>
+
+<!-- JUEGO -->
+<section class="sc" id="sg">
+  <div class="hud">
+    <div class="hl">NTEI</div>
+    <div class="hs"></div>
+    <div class="hi"><div class="hib">RONDA</div><div class="hiv" id="hr">01/08</div></div>
+    <div class="hs"></div>
+    <div class="hbw">
+      <div style="display:flex;justify-content:space-between;"><div class="hib">HP</div><div class="hib" id="hhpn">50</div></div>
+      <div class="hbo"><div class="hbi" id="hhpb" style="width:50%;background:var(--g)"></div></div>
+    </div>
+    <div class="hbw">
+      <div style="display:flex;justify-content:space-between;"><div class="hib">PROGRESO</div><div class="hib" id="hpn">0/8</div></div>
+      <div class="hbo"><div class="hbi" id="hpb" style="width:0%;background:var(--y)"></div></div>
+    </div>
+    <div class="hs"></div>
+    <div class="hi"><div class="hib">ROL</div><div class="hiv" id="hrl">—</div></div>
+  </div>
+  <div class="ga">
+    <div class="bf">
+      <div class="bs" id="bsc">
+        <div class="bg"></div>
+        <div class="bpl"><canvas id="cpp" width="48" height="48" class="wk"></canvas></div>
+        <div class="ben"><canvas id="cen" width="64" height="64" class="ft"></canvas></div>
+        <canvas id="bcan"></canvas>
+      </div>
+      <div class="db">
+        <div class="dn" id="dln">SISTEMA</div>
+        <div class="dt"><span id="dlt"></span><span class="dc"></span></div>
+      </div>
+      <div class="ap" id="apn"></div>
+    </div>
+    <div class="sb">
+      <div class="ss">
+        <div class="stl">Fases</div>
+        <div id="phs">
+          <div class="psi" data-s="0"><span class="pic">🌍</span>Sistema</div>
+          <div class="psi" data-s="1"><span class="pic">👨‍👩‍👧</span>Familia</div>
+          <div class="psi" data-s="2"><span class="pic">📚</span>Profesor</div>
+          <div class="psi" data-s="3"><span class="pic">⚡</span>Desafío</div>
+        </div>
+      </div>
+      <div class="ss">
+        <div class="stl">Stats</div>
+        <div class="sr">
+          <div class="si2"><div class="sh"><div class="snm">MORAL</div><div class="sv" id="vnm" style="color:var(--pu)">50</div></div><div class="sbg"><div class="sfi" id="bfm" style="width:50%;position:relative;background:var(--pu)"></div></div></div>
+          <div class="si2"><div class="sh"><div class="snm">APOYO PROF</div><div class="sv" id="vnt" style="color:var(--bl)">50</div></div><div class="sbg"><div class="sfi" id="bft" style="width:50%;position:relative;background:var(--bl)"></div></div></div>
+          <div class="si2"><div class="sh"><div class="snm">APOYO FAM</div><div class="sv" id="vnf" style="color:var(--cy)">50</div></div><div class="sbg"><div class="sfi" id="bff" style="width:50%;position:relative;background:var(--cy)"></div></div></div>
+          <div class="si2"><div class="sh"><div class="snm">PROGRESO</div><div class="sv" id="vnp" style="color:var(--y)">0/8</div></div><div class="sbg"><div class="sfi" id="bfp" style="width:0%;position:relative;background:var(--y)"></div></div></div>
+        </div>
+      </div>
+      <div class="ss" style="flex:1">
+        <div class="stl">Log</div>
+        <div class="hf" id="hfd"><div style="font-family:var(--font1);font-size:6.5px;color:var(--t3)">Sin registros...</div></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- MODAL RESULTADO -->
+<div id="mr">
+  <div class="mw">
+    <div class="mtb">
+      <div class="mtt" id="mtbt">RONDA 1</div>
+      <div style="font-family:var(--font1);font-size:8px;color:var(--y)" id="mtr">R1/8</div>
+    </div>
+    <div class="mb">
+      <div class="mt" id="mmt"></div>
+      <div class="ms" id="mms"></div>
+      <div class="me" id="mmex"></div>
+      <div class="mrf" id="mmrf"></div>
+      <button class="ba" onclick="closeModal()">▶ CONTINUAR</button>
+    </div>
+  </div>
+</div>
+
+<!-- FIN -->
+<section class="sc" id="se">
+  <div class="ew">
+    <div class="ea" id="easc"></div>
+    <h2 class="etl" id="etl"></h2>
+    <p class="em" id="emsg"></p>
+    <div class="esg" id="esg"></div>
+    <div class="rp">
+      <div class="rph">▋ REFLEXIONES FINALES</div>
+      <div class="rq"><span class="rn">01</span>¿El éxito fue mérito del estudiante o resultado de las condiciones externas?</div>
+      <div class="rq"><span class="rn">02</span>¿Cómo cambia si el estudiante no tiene apoyo familiar ni de ningún profesor?</div>
+      <div class="rq"><span class="rn">03</span>¿Qué reglas del sistema cambiarías para hacerlo más justo?</div>
+      <div class="rq"><span class="rn">04</span>¿En qué se parece a la realidad educativa que conoces?</div>
+    </div>
+    <div class="ebr">
+      <button class="bps" onclick="playAgain()">↩ JUGAR DE NUEVO</button>
+      <button class="bps" style="font-size:8px;" onclick="shareScore()">⬆ COMPARTIR</button>
+    </div>
+  </div>
+</section>
+
+<script>
+// CURSOR
+const cur=document.getElementById('cur');
+document.addEventListener('mousemove',e=>{cur.style.left=e.clientX+'px';cur.style.top=e.clientY+'px';});
+document.addEventListener('mousedown',()=>cur.classList.add('c'));
+document.addEventListener('mouseup',()=>cur.classList.remove('c'));
+
+// ESTRELLAS FONDO
+(function(){
+  const c=document.getElementById('pcv'),ctx=c.getContext('2d');
+  let W,H,stars=[];
+  function resize(){W=c.width=window.innerWidth;H=c.height=window.innerHeight;stars=Array.from({length:70},()=>({x:Math.random()*W,y:Math.random()*H,r:Math.random()*1.5+.3,s:Math.random()*.3+.05,o:Math.random()}));}
+  function tick(){ctx.clearRect(0,0,W,H);stars.forEach(s=>{s.y-=s.s;if(s.y<-2)s.y=H+2;s.o=.3+.7*Math.abs(Math.sin(Date.now()*.001+s.x));ctx.globalAlpha=s.o*.5;ctx.fillStyle='#ffffff';ctx.fillRect(Math.round(s.x),Math.round(s.y),Math.ceil(s.r),Math.ceil(s.r));});ctx.globalAlpha=1;requestAnimationFrame(tick);}
+  resize();window.addEventListener('resize',resize);tick();
+})();
+
+// FONDO TITULO MONTAÑAS
+(function(){
+  const c=document.getElementById('tbg');if(!c)return;
+  const ctx=c.getContext('2d');let W,H,t=0;
+  function resize(){W=c.width=window.innerWidth;H=c.height=window.innerHeight;}
+  function mtn(y0,col,amp,freq,off){ctx.beginPath();ctx.moveTo(0,H);for(let x=0;x<=W;x+=4){const y=y0+Math.sin(x*freq+off+t*.005)*amp+Math.sin(x*freq*2.3+off*1.7+t*.008)*(amp*.35);ctx.lineTo(x,y);}ctx.lineTo(W,H);ctx.closePath();ctx.fillStyle=col;ctx.fill();}
+  function tick(){t++;ctx.clearRect(0,0,W,H);mtn(H*.73,'#070718',32,.006,0);mtn(H*.8,'#0b0b26',22,.009,2);mtn(H*.87,'#101028',15,.013,4);ctx.strokeStyle='rgba(51,170,255,.12)';ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(0,H*.73);ctx.lineTo(W,H*.73);ctx.stroke();requestAnimationFrame(tick);}
+  resize();window.addEventListener('resize',resize);tick();
+})();
+
+// AUDIO
+let aCtx=null;
+function getA(){if(!aCtx)try{aCtx=new(window.AudioContext||window.webkitAudioContext)();}catch(e){}return aCtx;}
+function tone(f,tp,d,v,dl=0){const a=getA();if(!a)return;const o=a.createOscillator(),g=a.createGain();o.connect(g);g.connect(a.destination);o.type=tp;o.frequency.setValueAtTime(f,a.currentTime+dl);g.gain.setValueAtTime(v,a.currentTime+dl);g.gain.exponentialRampToValueAtTime(.001,a.currentTime+dl+d);o.start(a.currentTime+dl);o.stop(a.currentTime+dl+d);}
+function sfxSel(){tone(440,'square',.08,.18);tone(880,'square',.08,.12,.06);}
+function sfxOk(){[220,330,440,660].forEach((f,i)=>tone(f,'square',.12,.18,i*.06));}
+function sfxDmg(){tone(110,'sawtooth',.18,.25);tone(80,'square',.12,.18,.1);}
+function sfxWin(){[523,659,784,1047].forEach((f,i)=>tone(f,'square',.14,.22,i*.11));}
+function sfxLose(){[300,250,200,150].forEach((f,i)=>tone(f,'sawtooth',.18,.22,i*.14));}
+function sfxType(){tone(580+Math.random()*180,'square',.025,.035);}
+
+// TYPEWRITER
+let tt=null;
+function typeText(txt,el,spd=30,cb){clearInterval(tt);el.textContent='';let i=0;tt=setInterval(()=>{if(i<txt.length){el.textContent+=txt[i++];if(i%3===0)sfxType();}else{clearInterval(tt);if(cb)cb();}},spd);}
+
+// PIXEL SPRITES
+function drawSprite(id,type,sz){
+  const c=document.getElementById(id);if(!c)return;c.width=sz;c.height=sz;
+  const ctx=c.getContext('2d');ctx.imageSmoothingEnabled=false;const s=sz/8;
+  const SP={
+    estudiante:[[0,0,0,1,1,0,0,0],[0,0,1,3,3,1,0,0],[0,0,1,3,3,1,0,0],[0,0,0,1,1,0,0,0],[0,1,2,2,2,2,1,0],[0,0,0,2,2,0,0,0],[0,0,1,0,0,1,0,0],[0,0,1,0,0,1,0,0]],
+    profesor:  [[0,0,0,1,1,0,0,0],[0,0,1,4,4,1,0,0],[0,0,1,4,4,1,0,0],[0,0,0,1,1,0,0,0],[0,1,5,5,5,5,1,0],[0,0,1,5,5,1,0,0],[0,0,1,0,0,1,0,0],[0,0,1,0,0,1,0,0]],
+    familia:   [[0,1,1,0,0,1,1,0],[1,6,6,1,1,6,6,1],[1,6,6,1,1,6,6,1],[0,1,1,0,0,1,1,0],[0,2,2,2,2,2,2,0],[0,0,2,2,2,2,0,0],[0,1,1,0,0,1,1,0],[0,1,0,0,0,0,1,0]],
+    sistema:   [[1,1,1,1,1,1,1,1],[1,7,7,7,7,7,7,1],[1,7,0,0,0,0,7,1],[1,7,0,7,7,0,7,1],[1,7,0,7,7,0,7,1],[1,7,0,0,0,0,7,1],[1,7,7,7,7,7,7,1],[1,1,1,1,1,1,1,1]],
+    boss:      [[0,1,0,1,1,0,1,0],[1,8,1,8,8,1,8,1],[1,8,8,8,8,8,8,1],[1,8,8,9,9,8,8,1],[0,1,8,9,9,8,1,0],[0,1,8,8,8,8,1,0],[1,0,1,0,0,1,0,1],[1,0,1,0,0,1,0,1]]
+  };
+  const PAL={0:null,1:'#1a0a04',2:'#3355aa',3:'#ffcc88',4:'#cc8855',5:'#5577cc',6:'#ffaa66',7:'#aa3333',8:'#cc4400',9:'#ffee00'};
+  const g=SP[type]||SP.estudiante;
+  g.forEach((row,y)=>row.forEach((px,x)=>{if(!px)return;ctx.fillStyle=PAL[px];ctx.fillRect(x*s,y*s,s,s);}));
+}
+
+// DATOS
+const CONDS=[
+  {ic:'🌐',nm:'SIN CONECTIVIDAD', dc:'No hay internet ni dispositivos. Sin acceso digital esta semana.',        df:'dh',dl:'DIFÍCIL',    fm:-1,tm:0 },
+  {ic:'💰',nm:'BECA DISPONIBLE',  dc:'Una beca emergió. Oportunidad real, burocracia incluida.',               df:'de',dl:'FAVORABLE',  fm:+2,tm:+1},
+  {ic:'😰',nm:'CRISIS FAMILIAR',  dc:'Familiar enfermo. El estudiante asume responsabilidades del hogar.',     df:'dvh',dl:'MUY DIFÍCIL',fm:-3,tm:0 },
+  {ic:'🏫',nm:'ESCUELA SATURADA', dc:'Grupos desbordados. Apoyo personalizado: casi nulo.',                   df:'dh',dl:'DIFÍCIL',    fm:0, tm:-1},
+  {ic:'🤝',nm:'RED COMUNITARIA',  dc:'Tutorías voluntarias activas. El acceso a recursos mejora.',            df:'de',dl:'FAVORABLE',  fm:+1,tm:+2},
+  {ic:'📉',nm:'CRISIS ECONÓMICA', dc:'Recesión local. Materiales y transporte son lujos.',                    df:'dh',dl:'DIFÍCIL',    fm:-2,tm:0 },
+  {ic:'✨',nm:'MOMENTO DE CLARIDAD',dc:'Propósito encontrado. Motivación al máximo.',                         df:'de',dl:'FAVORABLE',  fm:+2,tm:+1},
+  {ic:'🚧',nm:'BUROCRACIA',       dc:'Trámites perdidos. Todo toma el doble de tiempo y energía.',            df:'dvh',dl:'MUY DIFÍCIL',fm:-1,tm:-1}
+];
+
+const FAMO=[
+  {nm:'APOYO EMOCIONAL',      dt:'Motivación y presencia activa',        ef:+2,pos:true },
+  {nm:'TRABAJO OBLIGATORIO',  dt:'Horas de trabajo adicional cada día',  ef:-3,pos:false},
+  {nm:'INVERSIÓN EN TUTORÍAS',dt:'Recursos para apoyo académico extra',  ef:+2,pos:true },
+  {nm:'ESTRÉS FINANCIERO',    dt:'Deudas visibles, tensión constante',   ef:-2,pos:false},
+  {nm:'EXPECTATIVA ALTA',     dt:'Presión con algo de motivación',       ef:+1,pos:true }
+];
+
+const TEAO=[
+  {nm:'ATENCIÓN PERSONALIZADA',dt:'100% del apoyo al estudiante',        ef:+3,pos:true },
+  {nm:'APOYO DISTRIBUIDO',     dt:'Un poco para cada estudiante',        ef:+1,pos:true },
+  {nm:'SIN INTERVENCIÓN',      dt:'El sistema actúa por su cuenta',      ef:0, pos:false}
+];
+
+const CHAL=[
+  {q:'¿Cuánto es 7 × 8?',                                              ans:['56','cincuenta y seis']},
+  {q:'¿Cuál es la capital de México?',                                  ans:['ciudad de mexico','cdmx','mexico','méxico']},
+  {q:'¿Cuántos años tiene una década?',                                 ans:['10','diez']},
+  {q:'¿Cuántas horas tiene un día?',                                    ans:['24','veinticuatro']},
+  {q:'¿En qué continente está Brasil?',                                 ans:['america','america del sur','sudamerica']},
+  {q:'¿Cuánto es 15% de 200?',                                         ans:['30','treinta']},
+  {q:'¿Cuántos lados tiene un triángulo?',                              ans:['3','tres']},
+  {q:'Si lees 20 páginas al día ¿cuántos días para 100 páginas?',      ans:['5','cinco']}
+];
+
+const DIALS=[
+  'El mundo tiene sus propias reglas. Hoy el sistema ha decidido que...',
+  'Las condiciones cambian sin avisar. Esta ronda la realidad dice...',
+  'Antes de actuar, el entorno ya tomó decisiones por ti...',
+  'No elegiste dónde nacer. Tampoco esto...',
+  'El sistema no hace favores. Hoy el escenario es...',
+  'Millones de estudiantes enfrentan esto a diario...',
+  'A veces el viento sopla a tu favor. Esta vez...',
+  'Las reglas cambian cuando menos lo esperas...'
+];
+
+const REFS=[
+  'El sistema pone condiciones antes de que puedas actuar.',
+  'Las decisiones familiares no siempre son libres ni conscientes.',
+  'Con recursos limitados, apoyar a uno significa abandonar a otro.',
+  'El mismo reto para todos, pero condiciones muy distintas.',
+  '¿El avance fue mérito o condiciones favorables?',
+  'Sin red de seguridad, el esfuerzo solo a veces alcanza.',
+  'Motivación importa — pero no sin condiciones mínimas.',
+  'Las barreras no son accidentes: reflejan quién tiene acceso.'
+];
+
+// ESTADO
+let G={role:null,round:1,phase:0,prog:0,hp:50,ts:50,fs:50,sf:null,st:null,ans:false,hist:[],wins:0,losses:0};
+
+window.onload=()=>{
+  drawSprite('spe','estudiante',48);drawSprite('spp','profesor',48);
+  drawSprite('spf','familia',48);drawSprite('spsi','sistema',48);
+};
+
+function selRol(el){
+  document.querySelectorAll('.rb').forEach(b=>b.classList.remove('sel'));
+  el.classList.add('sel');G.role=el.dataset.role;
+  document.getElementById('bst').disabled=false;sfxSel();
+}
+
+function startGame(){
+  sfxOk();getA();
+  showSc('sg');
+  G={...G,round:1,phase:0,prog:0,hp:50,ts:50,fs:50,sf:null,st:null,ans:false,hist:[],wins:0,losses:0};
+  drawSprite('cpp',G.role||'estudiante',48);
+  drawSprite('cen','boss',64);
+  document.getElementById('hrl').textContent=(G.role||'EST').toUpperCase().slice(0,3);
+  renderRound();
+}
+
+function updateHUD(){
+  const r=G.round;
+  document.getElementById('hr').textContent=String(r).padStart(2,'0')+'/08';
+  document.getElementById('hhpn').textContent=Math.round(G.hp);
+  document.getElementById('hpn').textContent=G.prog+'/8';
+  const hb=document.getElementById('hhpb');
+  hb.style.width=G.hp+'%';
+  hb.style.background=G.hp>60?'var(--g)':G.hp>30?'var(--y)':'var(--r)';
+  document.getElementById('hpb').style.width=(G.prog*12.5)+'%';
+  document.getElementById('gpb').style.width=(G.prog*12.5)+'%';
+  [['vnm','bfm',G.hp,'var(--pu)'],['vnt','bft',G.ts,'var(--bl)'],['vnf','bff',G.fs,'var(--cy)']].forEach(([vi,bi,v,c])=>{
+    document.getElementById(vi).textContent=Math.round(v);
+    const el=document.getElementById(bi);el.style.width=v+'%';el.style.background=c;
+  });
+  document.getElementById('vnp').textContent=G.prog+'/8';
+  document.getElementById('bfp').style.width=(G.prog*12.5)+'%';
+}
+
+function updPhase(){
+  document.querySelectorAll('#phs .psi').forEach((el,i)=>{
+    el.className='psi';
+    if(i<G.phase)el.classList.add('dn2');
+    else if(i===G.phase)el.classList.add('ac');
+  });
+}
+
+function renderRound(){
+  if(G.round>8){endGame();return;}
+  G.phase=0;G.sf=null;G.st=null;G.ans=false;
+  updateHUD();showPhase();
+}
+
+function showPhase(){
+  updateHUD();updPhase();
+  const cond=CONDS[G.round-1];
+  const ap=document.getElementById('apn');
+
+  if(G.phase===0){
+    document.getElementById('dln').textContent='🌍 SISTEMA';
+    typeText(DIALS[G.round-1],document.getElementById('dlt'),26);
+    ap.innerHTML=`<div class="pt">Condición — Ronda ${G.round}</div>
+    <div class="cc"><span class="ci">${cond.ic}</span><div class="cn">${cond.nm}</div><div class="cd">${cond.dc}</div><div class="dt2 ${cond.df}">${cond.dl}</div></div>
+    <div style="font-family:var(--font2);font-size:17px;color:var(--t3);margin-bottom:10px;padding:8px;border:2px solid var(--s3);line-height:1.5;">"${REFS[G.round-1]}"</div>
+    <button class="ba" onclick="nxtPhase()">▶ CONTINUAR</button>`;
+  }
+  else if(G.phase===1){
+    document.getElementById('dln').textContent='👨‍👩‍👧 FAMILIA';
+    typeText('La familia decide. El estudiante no siempre controla este contexto...',document.getElementById('dlt'),26);
+    let opts='';
+    FAMO.forEach((o,i)=>{opts+=`<div class="oi${o.pos?'':' neg'}" onclick="selFam(this,${i})"><div class="ot"><div class="on">${o.nm}</div><div class="od">${o.dt}</div></div><div class="of ${o.pos?'fp':'fn'}">${o.pos?'+':''}${o.ef}</div></div>`;});
+    ap.innerHTML=`<div class="pt">Apoyo familiar — Ronda ${G.round}</div><div class="ol" id="fol">${opts}</div><button class="ba" id="bfam" onclick="nxtPhase()" disabled>▶ CONFIRMAR</button>`;
+  }
+  else if(G.phase===2){
+    document.getElementById('dln').textContent='📚 PROFESOR';
+    typeText('El profesor tiene recursos limitados. Cada decisión tiene un costo...',document.getElementById('dlt'),26);
+    let opts='';
+    TEAO.forEach((o,i)=>{opts+=`<div class="oi${o.pos?'':' neg'}" onclick="selTea(this,${i})"><div class="ot"><div class="on">${o.nm}</div><div class="od">${o.dt}</div></div><div class="of ${o.ef>0?'fp':o.ef<0?'fn':'fu'}">${o.ef>0?'+':''}${o.ef}</div></div>`;});
+    ap.innerHTML=`<div class="pt">Estrategia del profesor — Ronda ${G.round}</div><div class="ol" id="tol">${opts}</div><button class="ba" id="btea" onclick="nxtPhase()" disabled>▶ DECIDIR</button>`;
+  }
+  else if(G.phase===3){
+    const ch=CHAL[G.round-1];
+    document.getElementById('dln').textContent='⚡ DESAFÍO';
+    typeText('Demuestra lo que sabes. Recuerda: las condiciones afectan la concentración...',document.getElementById('dlt'),26);
+    ap.innerHTML=`<div class="pt">Reto académico — Ronda ${G.round}</div>
+    <div class="chb"><div class="chq">${ch.q}</div>
+    <input type="text" class="ri" id="chi" placeholder="> ESCRIBE TU RESPUESTA_" autocomplete="off" spellcheck="false">
+    <div class="fb" id="chfb"></div>
+    <button class="ba" id="bans" onclick="checkAns()">▶ RESPONDER</button></div>
+    <button class="ba" id="bskip" onclick="nxtPhase()" disabled style="margin-top:6px;opacity:.55;">↷ PASAR SIN RESPONDER</button>`;
+    document.getElementById('chi').addEventListener('keydown',e=>{if(e.key==='Enter')checkAns();});
+  }
+}
+
+function nxtPhase(){sfxOk();if(G.phase<3){G.phase++;showPhase();}else{resolveRound();}}
+
+function selFam(el,i){G.sf=i;document.querySelectorAll('#fol .oi').forEach(x=>x.classList.remove('sel'));el.classList.add('sel');document.getElementById('bfam').disabled=false;sfxSel();}
+function selTea(el,i){G.st=i;document.querySelectorAll('#tol .oi').forEach(x=>x.classList.remove('sel'));el.classList.add('sel');document.getElementById('btea').disabled=false;sfxSel();}
+
+function norm(s){return s.normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().trim();}
+
+function checkAns(){
+  const inp=document.getElementById('chi');
+  const fb=document.getElementById('chfb');
+  const raw=norm(inp.value);
+  const ok=CHAL[G.round-1].ans.some(a=>norm(a)===raw);
+  if(ok){
+    inp.className='ri ok';fb.className='fb y on';fb.textContent='✓ ¡CORRECTO! +XP ACADÉMICO';
+    G.ans=true;sfxWin();spawnXP('+XP','var(--g)');
+    document.getElementById('bans').disabled=true;
+    const sk=document.getElementById('bskip');sk.disabled=false;sk.style.opacity='1';sk.textContent='▶ CONTINUAR';
+  } else {
+    inp.className='ri no';fb.className='fb n on';fb.textContent='✗ INCORRECTO — intenta de nuevo o pasa';
+    sfxDmg();hitEnemy();
+    setTimeout(()=>{const sk=document.getElementById('bskip');if(sk){sk.disabled=false;sk.style.opacity='1';}},900);
+  }
+}
+
+function hitEnemy(){const e=document.getElementById('cen');e.classList.add('hit2');setTimeout(()=>e.classList.remove('hit2'),300);}
+
+function spawnXP(txt,col){
+  const el=document.createElement('div');el.className='xpf';el.style.color=col;
+  el.style.left=(35+Math.random()*20)+'%';el.style.top='35%';el.textContent=txt;
+  document.body.appendChild(el);setTimeout(()=>el.remove(),1000);
+}
+
+function resolveRound(){
+  const cond=CONDS[G.round-1];
+  const fam=FAMO[G.sf];const tea=TEAO[G.st];
+  let gained=0;
+  if(G.ans)gained+=1;
+  if(tea.ef>=2)gained+=1;
+  if(fam.ef>=2)gained+=1;
+  if(cond.df==='de')gained+=1;
+  if(cond.df==='dvh')gained=Math.max(0,gained-1);
+  if(G.ans&&tea.ef>0&&fam.ef>0)gained=Math.min(3,gained+1);
+
+  G.prog=Math.min(8,G.prog+gained);
+  G.hp=Math.max(0,Math.min(100,G.hp+fam.ef));
+  G.ts=Math.max(0,Math.min(100,G.ts+tea.ef*.5));
+  G.fs=Math.max(0,Math.min(100,G.fs+fam.ef*.4));
+
+  if(gained>0){G.wins++;spawnXP('▲+'+gained,'var(--y)');}
+  else{G.losses++;spawnXP('▼0','var(--r)');sfxDmg();}
+
+  G.hist.push({r:G.round,c:cond.nm,f:fam.nm,t:tea.nm,p:G.prog,g:gained});
+  updHistFeed();updateHUD();
+
+  const good=gained>0;
+  document.getElementById('mtbt').textContent=`RONDA ${G.round} — ${good?'ÉXITO':'SIN AVANCE'}`;
+  document.getElementById('mtr').textContent='R'+G.round+'/8';
+  const mmt=document.getElementById('mmt');
+  mmt.style.color=good?'var(--g)':'var(--r)';
+  mmt.textContent=good?(gained>=2?'¡AVANCE SÓLIDO!':'AVANZASTE'):'SIN PROGRESO';
+  document.getElementById('mms').textContent=good?`Ganaste ${gained} paso(s). Moral: ${Math.round(G.hp)}.`:`Las condiciones bloquearon el avance. Progreso: ${G.prog}/8.`;
+  document.getElementById('mmex').innerHTML=`<div class="mec"><span class="men" style="color:${good?'var(--g)':'var(--r)'}">${gained>0?'+':''}${gained}</span><span class="mel">PASOS</span></div><div class="mec"><span class="men" style="color:var(--y)">${G.prog}/8</span><span class="mel">TOTAL</span></div><div class="mec"><span class="men" style="color:${G.ans?'var(--g)':'var(--r)'}">${G.ans?'✓':'✗'}</span><span class="mel">RETO</span></div>`;
+  document.getElementById('mmrf').textContent=REFS[G.round-1];
+  document.getElementById('mr').classList.add('on');
+  good?sfxWin():sfxLose();
+}
+
+function closeModal(){document.getElementById('mr').classList.remove('on');sfxOk();G.round++;if(G.round>8)endGame();else renderRound();}
+
+function updHistFeed(){
+  const fd=document.getElementById('hfd');fd.innerHTML='';
+  [...G.hist].reverse().forEach(h=>{
+    const el=document.createElement('div');el.className='he';
+    el.innerHTML=`<span class="hr">R${h.r}</span> <span class="hc">${h.c}</span><br><span class="${h.g>0?'hu':'hd'}">${h.g>0?'▲ +'+h.g:'▼ sin avance'}</span> · ${h.p}/8`;
+    fd.appendChild(el);
+  });
+}
+
+function endGame(){
+  const win=G.prog>=8;
+  showSc('se');
+  if(win){
+    sfxWin();setTimeout(sfxWin,400);
+    document.getElementById('easc').style.color='var(--y)';
+    document.getElementById('easc').textContent='  ___  ___    _   ___  _   _   _   ___ ___ ___  _  _\n / __|| _ \\  /_\\ |   \\| | | | | | /___|_ _/ _ \\| \\| |\n| (_ ||   / / _ \\| |) | |_| |_| || (__ | || (_) |  . |\n \\___||_|_\\/_/ \\_\\___/|___|___,_| \\___|___\\___/|_|\\_|';
+    document.getElementById('etl').style.color='var(--y)';
+    document.getElementById('etl').textContent='¡GRADUACIÓN DESBLOQUEADA!';
+    document.getElementById('emsg').textContent=`Con ${G.prog}/8 completaste el camino. Ganaste ${G.wins} rondas y perdiste ${G.losses}. Pero la pregunta sigue: ¿fue tu esfuerzo o las condiciones lo que marcó la diferencia?`;
+  } else {
+    sfxLose();
+    document.getElementById('easc').style.color='var(--r)';
+    document.getElementById('easc').textContent=' ___   _   __  __ ___    _____   _____ ___\n/ __| /_\\ |  \\/  | __|  / _ \\ \\ / / __| _ \\\n\\__ \\/ _ \\| |\\/| | _|  | (_) \\ V /| _||   /\n|___/_/ \\_\\_|  |_|___|  \\___/ \\_/ |___|_|_\\';
+    document.getElementById('etl').style.color='var(--r)';
+    document.getElementById('etl').textContent='EL SISTEMA GANÓ ESTA VEZ';
+    document.getElementById('emsg').textContent=`Llegaste a ${G.prog}/8. Perdiste ${G.losses} rondas. No es un fracaso tuyo: es evidencia de cómo el sistema bloquea a quienes no parten desde el mismo lugar.`;
+  }
+  document.getElementById('esg').innerHTML=`<div class="esb"><span class="esv">${G.prog}/8</span><div class="esl">PROGRESO FINAL</div></div><div class="esb"><span class="esv" style="color:var(--g)">${G.wins}</span><div class="esl">RONDAS GANADAS</div></div><div class="esb"><span class="esv" style="color:var(--r)">${G.losses}</span><div class="esl">RONDAS PERDIDAS</div></div><div class="esb"><span class="esv" style="color:var(--pu)">${Math.round(G.hp)}</span><div class="esl">MORAL FINAL</div></div>`;
+}
+
+function playAgain(){sfxOk();G.role=null;document.querySelectorAll('.rb').forEach(b=>b.classList.remove('sel'));document.getElementById('bst').disabled=true;showSc('st');}
+
+function shareScore(){
+  const win=G.prog>=8;
+  const txt=`Jugué "No Todos Empiezan Igual" y ${win?'¡me gradué!':'el sistema me bloqueó.'} Llegué a ${G.prog}/8 con ${G.wins} rondas ganadas. ¿La educación es mérito o condiciones?`;
+  if(navigator.share)navigator.share({title:'No Todos Empiezan Igual',text:txt});
+  else if(navigator.clipboard)navigator.clipboard.writeText(txt).then(()=>alert('¡Copiado!'));
+}
+
+function showSc(id){document.querySelectorAll('.sc').forEach(s=>s.classList.remove('on'));document.getElementById(id).classList.add('on');window.scrollTo(0,0);}
+</script>
+</body>
+</html>
